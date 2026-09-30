@@ -1,0 +1,8 @@
+{
+  "name": "drishti-delta-demo",
+  "version": "0.9.0",
+  "private": true,
+  "description": "DRISHTI-Δ web demo: semantic search and change analysis of Sentinel-2 imagery (Team NOVA, SIH 2026, PS 26227)",
+  "scripts": { "dev": "node dev-server.js" },
+  "license": "MIT"
+}

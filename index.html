@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DRISHTI-Δ · Ask the archive</title>
+<meta name="description" content="DRISHTI-Δ: semantic search and multi-temporal change analysis of Sentinel-2 imagery. Team NOVA, Smart India Hackathon 2026, PS 26227.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/maplibre/maplibre-gl.css">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="home">
+  <!-- ======= map stage ======= -->
+  <div id="stage">
+    <div id="stars"></div>
+    <div id="map"></div>
+    <div id="mapBefore" hidden></div>
+    <div id="swipe" hidden>
+      <div class="swipe-line"></div>
+      <button class="swipe-knob" aria-label="Drag to compare years" title="Drag to compare">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div id="yearPills" hidden>
+      <label class="ypill before"><span>Before</span><select id="selBefore" aria-label="Before year"></select></label>
+      <label class="ypill after"><span>After</span><select id="selAfter" aria-label="After year"></select></label>
+    </div>
+    <div id="lapse" hidden><div class="lapse-year" id="lapseYear">2016</div><div class="lapse-bar"><i id="lapseFill"></i></div></div>
+  </div>
+
+  <!-- ======= top bar ======= -->
+  <header id="topbar">
+    <a class="brand" href="#" id="brandHome" title="Back to the globe">
+      <span class="mark">Δ</span>
+      <span class="brand-text"><b>DRISHTI-Δ</b><small>Satellite archive search &amp; change analysis</small></span>
+    </a>
+    <nav id="tabs" aria-label="Views">
+      <button data-view="search" class="on">Search</button>
+      <button data-view="change">Change</button>
+      <button data-view="discover">Discover</button>
+      <button data-view="review">Review <span class="badge" id="reviewCount">1</span></button>
+    </nav>
+    <div class="top-right">
+      <button id="aiPill" class="ai-pill" title="AI status"><i class="dot"></i><span id="aiText">AI: starting</span></button>
+      <button id="howBtn" class="ghost-btn">How it works</button>
+      <span class="team">NOVA · SIH 2026 · PS 26227</span>
+    </div>
+  </header>
+
+  <!-- ======= hero (home) ======= -->
+  <section id="hero">
+    <h1>Ask the archive. <span>See what changed.</span></h1>
+    <p class="sub">Search a decade of Sentinel-2 imagery over India by meaning, with words or an example image, then drag through the years to see exactly what changed and when.</p>
+    <div class="searchbox big" id="heroSearch">
+      <svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="text" placeholder="Try “solar park in Rajasthan” or a place like “Jewar”" autocomplete="off" spellcheck="false">
+      <button class="img-btn" title="Search with an image"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.8" fill="currentColor"/><path d="M4 18l5.5-5 4 3.5 3-2.5L20 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+      <button class="go">Search</button>
+      <div class="suggest" hidden></div>
+    </div>
+    <div class="examples" id="examples"></div>
+    <div class="facts">
+      <span><b id="factSites">25</b> places indexed</span>
+      <span><b>10</b> annual mosaics, 2016 to 2025</span>
+      <span><b>0</b> servers: AI runs in your browser</span>
+    </div>
+  </section>
+
+  <!-- ======= side panel ======= -->
+  <aside id="panel" aria-live="polite">
+    <div class="panel-head">
+      <div class="searchbox small" id="panelSearch">
+        <svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="text" placeholder="Search by meaning or place" autocomplete="off" spellcheck="false">
+        <button class="img-btn" title="Search with an image"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.8" fill="currentColor"/><path d="M4 18l5.5-5 4 3.5 3-2.5L20 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+        <div class="suggest" hidden></div>
+      </div>
+      <div class="journey" id="journey"></div>
+      <div class="jcap" id="jcap"></div>
+    </div>
+    <div class="panel-body" id="panelBody"></div>
+  </aside>
+
+  <!-- ======= map tools ======= -->
+  <div id="tools">
+    <button data-tool="home" title="Back to globe"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 12h17M12 3.5c3 3 3 14 0 17M12 3.5c-3 3-3 14 0 17" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+    <button data-tool="labels" class="on" title="Place labels"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <button data-tool="similar" title="Find places that look like this view"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13 7h4a2 2 0 012 2v2M11 17H7a2 2 0 01-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+    <button data-tool="compare" title="Compare years here"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4v16" stroke="currentColor" stroke-width="1.8"/><path d="M3 4h9v16H5.5A2.5 2.5 0 013 17.5z" fill="currentColor" opacity=".25"/></svg></button>
+    <button data-tool="save" title="Save this view as an image (use it for image search)"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 19h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+
+  <div id="coords"></div>
+  <div id="toast" role="status"></div>
+  <input type="file" id="fileInput" accept="image/*" hidden>
+  <div id="drop" hidden><div>Drop an image to search the archive for places that look like it</div></div>
+
+  <!-- ======= how it works ======= -->
+  <div id="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <h2 id="modalTitle">How DRISHTI-Δ works</h2>
+        <div class="modal-tabs" id="modalTabs"></div>
+        <button class="x" id="modalClose" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="vendor/maplibre/maplibre-gl.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
